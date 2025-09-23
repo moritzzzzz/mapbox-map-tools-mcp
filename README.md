@@ -1,4 +1,4 @@
-# Mapbox Map Tools Library
+# Mapbox Map MCP Tools Library
 
 A JavaScript library providing MCP (Model Context Protocol) compatible tools for Mapbox GL JS map visualization with LLM function calling support.
 
