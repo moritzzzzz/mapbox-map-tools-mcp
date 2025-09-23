@@ -109,23 +109,8 @@ This library is designed to work alongside MCP servers, particularly the Mapbox 
 
 ### Architecture Overview
 
-```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────────┐
-│   LLM           │    │  Your Web App    │    │  Mapbox Map Tools   │
-│                 │◄──►│                  │◄──►│     Library         │
-│  Function       │    │  - Handles chat  │    │  - Map visualization│
-│  Calling        │    │  - Tool routing  │    │  - Layer management │
-└─────────────────┘    └──────────────────┘    └─────────────────────┘
-         │                        │
-         ▼                        ▼
-┌─────────────────┐    ┌──────────────────┐
-│ Mapbox MCP      │    │  Other MCP       │
-│ Server          │    │  Servers         │
-│ - Place search  │    │  - Weather APIs  │
-│ - Geocoding     │    │  - Custom data   │
-│ - Directions    │    │  - External APIs │
-└─────────────────┘    └──────────────────┘
-```
+<img width="1024" height="1024" alt="architecture_1_mcp_mapbox" src="https://github.com/user-attachments/assets/1e6a83c3-7d6a-4343-9826-aff8cf741965" />
+
 
 ### Example Integration with Multiple MCP Servers
 
