@@ -303,11 +303,11 @@ class GeospatialAI {
         // Add assistant message to conversation history
         this.conversationHistory.push({
             role: 'assistant',
-            content: assistantResponse || 'I've updated the map with your requested information.'
+            content: assistantResponse || 'I have updated the map with your requested information.'
         });
 
         return {
-            text: assistantResponse || 'I've processed your request and updated the map.',
+            text: assistantResponse || 'I have processed your request and updated the map.',
             toolResults,
             isError: false
         };
