@@ -36,7 +36,7 @@ npm install mapbox-map-tools-mcp
 
 ### ES Modules
 ```javascript
-import { MapboxMapTools } from 'mapbox-map-tools';
+import { MapboxMapTools } from 'mapbox-map-tools-mcp';
 ```
 
 ## Quick Start
@@ -44,7 +44,7 @@ import { MapboxMapTools } from 'mapbox-map-tools';
 ### Basic Setup
 
 ```javascript
-import { MapboxMapTools } from 'mapbox-map-tools';
+import { MapboxMapTools } from 'mapbox-map-tools-mcp';
 import mapboxgl from 'mapbox-gl';
 
 // Initialize your Mapbox map
@@ -291,7 +291,7 @@ await mapTools.executeTool('set_map_style', {
 ```jsx
 import React, { useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
-import { MapboxMapTools } from 'mapbox-map-tools';
+import { MapboxMapTools } from 'mapbox-map-tools-mcp';
 
 function MapComponent() {
     const mapContainer = useRef(null);
@@ -346,7 +346,7 @@ function MapComponent() {
 
 <script>
 import mapboxgl from 'mapbox-gl';
-import { MapboxMapTools } from 'mapbox-map-tools';
+import { MapboxMapTools } from 'mapbox-map-tools-mcp';
 
 export default {
   name: 'MapComponent',
@@ -389,7 +389,7 @@ export default {
 ```typescript
 import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import mapboxgl from 'mapbox-gl';
-import { MapboxMapTools } from 'mapbox-map-tools';
+import { MapboxMapTools } from 'mapbox-map-tools-mcp';
 
 @Component({
   selector: 'app-map',
@@ -642,9 +642,9 @@ MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Support
 
-- 📚 [Documentation](https://github.com/your-username/mapbox-map-tools#readme)
-- 🐛 [Issue Tracker](https://github.com/your-username/mapbox-map-tools/issues)
-- 💬 [Discussions](https://github.com/your-username/mapbox-map-tools/discussions)
+- 📚 [Documentation](https://github.com/moritzzzzz/mapbox-map-tools-mcp#readme)
+- 🐛 [Issue Tracker](https://github.com/moritzzzzz/mapbox-map-tools-mcp/issues)
+- 💬 [Discussions](https://github.com/moritzzzzz/mapbox-map-tools-mcp/discussions)
 
 ## Related Projects
 
