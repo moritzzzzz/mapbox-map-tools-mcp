@@ -1,5 +1,5 @@
 /**
- * Mapbox Map Tools Library
+ * Mapbox Map Tools Library - ES Module Version
  * A JavaScript library providing MCP-compatible tools for Mapbox GL JS map visualization
  *
  * This library provides a set of tools that can be used with Language Learning Models (LLMs)
@@ -10,7 +10,7 @@
  * @license MIT
  */
 
-class MapboxMapTools {
+export class MapboxMapTools {
     constructor(mapInstance, options = {}) {
         if (!mapInstance) {
             throw new Error('Mapbox GL JS map instance is required');
@@ -633,28 +633,3 @@ class MapboxMapTools {
         // Note: Event listeners will be automatically cleaned up when layers are removed
     }
 }
-
-// UMD export pattern for browser and Node.js compatibility
-(function (root, factory) {
-    if (typeof define === 'function' && define.amd) {
-        // AMD
-        define(['mapbox-gl'], factory);
-    } else if (typeof module === 'object' && module.exports) {
-        // Node.js - export both named and default
-        const result = factory(require('mapbox-gl'));
-        module.exports = result;
-        module.exports.MapboxMapTools = result.MapboxMapTools;
-        module.exports.default = result;
-    } else {
-        // Browser globals
-        root.MapboxMapTools = factory(root.mapboxgl);
-    }
-}(typeof self !== 'undefined' ? self : this, function (mapboxgl) {
-    // Make mapboxgl available to the class if it's passed as parameter
-    if (mapboxgl && !window.mapboxgl && typeof window !== 'undefined') {
-        window.mapboxgl = mapboxgl;
-    }
-
-    // Export the class directly for browser use
-    return MapboxMapTools;
-}));

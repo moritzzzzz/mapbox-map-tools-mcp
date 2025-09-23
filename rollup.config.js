@@ -37,7 +37,7 @@ export default [
   },
   // ES module build
   {
-    input: 'src/mapbox-map-tools.js',
+    input: 'src/mapbox-map-tools.esm.js',
     output: {
       file: 'dist/mapbox-map-tools.esm.js',
       format: 'es'

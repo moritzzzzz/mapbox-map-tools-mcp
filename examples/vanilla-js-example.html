@@ -119,7 +119,7 @@
 
     <script>
         // Initialize Mapbox GL JS
-        mapboxgl.accessToken = 'YOUR_ACCESS_TOKEN';
+        mapboxgl.accessToken = 'YOUR_TOKEN';
 
         const map = new mapboxgl.Map({
             container: 'map',
@@ -135,7 +135,7 @@
         // Initialize map tools when map loads
         map.on('load', () => {
             // Create MapboxMapTools instance with custom options
-            mapTools = new MapboxMapTools.MapboxMapTools(map, {
+            mapTools = new MapboxMapTools(map, {
                 defaultPointColor: '#FF6B6B',
                 defaultRouteColor: '#4ECDC4',
                 defaultRouteWidth: 5,

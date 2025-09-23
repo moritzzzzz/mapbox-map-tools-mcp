@@ -8,7 +8,7 @@
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
-import { MapboxMapTools } from 'mapbox-map-tools';
+import { MapboxMapTools } from '../src/mapbox-map-tools.esm.js';
 
 // Mock LLM client - replace with your actual LLM integration
 class MockLLMClient {
