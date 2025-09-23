@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapbox Map Tools - Vanilla JS Example</title>
+
+    <!-- Mapbox GL JS -->
+    <link href='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js'></script>
+
+    <!-- Mapbox Map Tools -->
+    <script src='../src/mapbox-map-tools.js'></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .controls button {
+            padding: 10px 15px;
+            background: #0074D9;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .controls button:hover {
+            background: #0056b3;
+        }
+
+        #map {
+            width: 100%;
+            height: 500px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .info h3 {
+            margin-top: 0;
+        }
+
+        .code-block {
+            background: #f1f3f4;
+            padding: 10px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 12px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Mapbox Map Tools Library</h1>
+            <p>Vanilla JavaScript Integration Example</p>
+        </div>
+
+        <div class="controls">
+            <button onclick="addCities()">Add Cities</button>
+            <button onclick="addRoute()">Add Route</button>
+            <button onclick="addPolygon()">Add Polygon</button>
+            <button onclick="fitToBounds()">Fit to Bounds</button>
+            <button onclick="changeStyle()">Change Style</button>
+            <button onclick="clearLayers()">Clear All</button>
+            <button onclick="demonstrateLLMTools()">Show LLM Tools</button>
+        </div>
+
+        <div id="map"></div>
+
+        <div class="info">
+            <h3>About This Example</h3>
+            <p>This example demonstrates how to use the Mapbox Map Tools library in a vanilla JavaScript application. The library provides MCP-compatible tools that can be used with Language Learning Models for geospatial visualization.</p>
+
+            <h4>Key Features Demonstrated:</h4>
+            <ul>
+                <li>Point markers with popups</li>
+                <li>Route/path visualization</li>
+                <li>Polygon areas</li>
+                <li>Map navigation controls</li>
+                <li>Style switching</li>
+                <li>Layer management</li>
+                <li>LLM tool integration</li>
+            </ul>
+
+            <div id="output"></div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Mapbox GL JS
+        mapboxgl.accessToken = 'YOUR_ACCESS_TOKEN';
+
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v12',
+            center: [-98.5795, 39.8283], // Center of US
+            zoom: 4
+        });
+
+        let mapTools;
+        let currentStyle = 0;
+        const styles = ['streets-v12', 'outdoors-v12', 'light-v11', 'dark-v11', 'satellite-v9'];
+
+        // Initialize map tools when map loads
+        map.on('load', () => {
+            // Create MapboxMapTools instance with custom options
+            mapTools = new MapboxMapTools.MapboxMapTools(map, {
+                defaultPointColor: '#FF6B6B',
+                defaultRouteColor: '#4ECDC4',
+                defaultRouteWidth: 5,
+                enablePopups: true,
+                enableHoverEffects: true
+            });
+
+            console.log('MapboxMapTools initialized');
+            updateOutput('Map and tools initialized successfully!');
+        });
+
+        async function addCities() {
+            if (!mapTools) return;
+
+            const cities = [
+                {
+                    longitude: -74.0059,
+                    latitude: 40.7128,
+                    title: "New York City",
+                    description: "The Big Apple - America's largest city",
+                    color: "#FF6B6B"
+                },
+                {
+                    longitude: -118.2437,
+                    latitude: 34.0522,
+                    title: "Los Angeles",
+                    description: "City of Angels - Entertainment capital",
+                    color: "#4ECDC4"
+                },
+                {
+                    longitude: -87.6298,
+                    latitude: 41.8781,
+                    title: "Chicago",
+                    description: "The Windy City - Architectural marvel",
+                    color: "#45B7D1"
+                },
+                {
+                    longitude: -95.3698,
+                    latitude: 29.7604,
+                    title: "Houston",
+                    description: "Space City - Energy capital",
+                    color: "#96CEB4"
+                }
+            ];
+
+            try {
+                const result = await mapTools.executeTool('add_points_to_map', {
+                    points: cities,
+                    layerName: 'major-cities'
+                });
+
+                updateOutput(`Added ${cities.length} cities to the map`);
+                console.log('Cities added:', result);
+            } catch (error) {
+                updateOutput(`Error adding cities: ${error.message}`);
+            }
+        }
+
+        async function addRoute() {
+            if (!mapTools) return;
+
+            // Route from NYC to LA via Chicago
+            const routeCoordinates = [
+                [-74.0059, 40.7128],  // New York
+                [-87.6298, 41.8781],  // Chicago
+                [-95.3698, 29.7604],  // Houston
+                [-118.2437, 34.0522]  // Los Angeles
+            ];
+
+            try {
+                const result = await mapTools.executeTool('add_route_to_map', {
+                    coordinates: routeCoordinates,
+                    color: '#FF6B6B',
+                    width: 6,
+                    layerName: 'cross-country-route'
+                });
+
+                updateOutput('Added cross-country route');
+                console.log('Route added:', result);
+            } catch (error) {
+                updateOutput(`Error adding route: ${error.message}`);
+            }
+        }
+
+        async function addPolygon() {
+            if (!mapTools) return;
+
+            // Texas boundary (simplified)
+            const texasBounds = [[
+                [-106.5, 25.8],
+                [-93.5, 25.8],
+                [-93.5, 36.5],
+                [-106.5, 36.5],
+                [-106.5, 25.8]
+            ]];
+
+            try {
+                const result = await mapTools.executeTool('add_polygon_to_map', {
+                    coordinates: texasBounds,
+                    fillColor: '#FFD93D',
+                    fillOpacity: 0.3,
+                    strokeColor: '#FFD93D',
+                    strokeWidth: 3,
+                    layerName: 'texas-boundary'
+                });
+
+                updateOutput('Added Texas boundary polygon');
+                console.log('Polygon added:', result);
+            } catch (error) {
+                updateOutput(`Error adding polygon: ${error.message}`);
+            }
+        }
+
+        async function fitToBounds() {
+            if (!mapTools) return;
+
+            const coordinates = [
+                [-74.0059, 40.7128],  // NYC
+                [-118.2437, 34.0522], // LA
+                [-87.6298, 41.8781],  // Chicago
+                [-95.3698, 29.7604]   // Houston
+            ];
+
+            try {
+                const result = await mapTools.executeTool('fit_map_to_bounds', {
+                    coordinates: coordinates,
+                    padding: 50
+                });
+
+                updateOutput('Map fitted to show all major cities');
+                console.log('Bounds fitted:', result);
+            } catch (error) {
+                updateOutput(`Error fitting bounds: ${error.message}`);
+            }
+        }
+
+        async function changeStyle() {
+            if (!mapTools) return;
+
+            currentStyle = (currentStyle + 1) % styles.length;
+            const style = styles[currentStyle];
+
+            try {
+                const result = await mapTools.executeTool('set_map_style', {
+                    style: style
+                });
+
+                updateOutput(`Changed map style to: ${style}`);
+                console.log('Style changed:', result);
+            } catch (error) {
+                updateOutput(`Error changing style: ${error.message}`);
+            }
+        }
+
+        async function clearLayers() {
+            if (!mapTools) return;
+
+            try {
+                const result = await mapTools.executeTool('clear_map_layers', {});
+                updateOutput('All custom layers cleared');
+                console.log('Layers cleared:', result);
+            } catch (error) {
+                updateOutput(`Error clearing layers: ${error.message}`);
+            }
+        }
+
+        function demonstrateLLMTools() {
+            if (!mapTools) return;
+
+            const tools = mapTools.getToolsForLLM();
+
+            let output = 'Available LLM Tools:\\n\\n';
+            tools.forEach(tool => {
+                output += `• ${tool.name}: ${tool.description}\\n`;
+            });
+
+            output += '\\n\\nThese tools can be used with Claude, GPT-4, or other LLMs that support function calling.';
+            output += '\\n\\nExample LLM prompt: "Show me a route from New York to Los Angeles with stops in Chicago and Houston"';
+
+            updateOutput(output);
+            console.log('Available tools:', tools);
+        }
+
+        function updateOutput(message) {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+
+            output.innerHTML = `
+                <div class="code-block">[${timestamp}] ${message}</div>
+                ${output.innerHTML}
+            `;
+        }
+
+        // Example of how you might integrate with an LLM
+        async function simulateLLMInteraction() {
+            // This is a simulation - in real use, this would come from your LLM
+            const mockLLMResponse = {
+                tool_calls: [
+                    {
+                        name: 'add_points_to_map',
+                        input: {
+                            points: [
+                                {
+                                    longitude: -74.0059,
+                                    latitude: 40.7128,
+                                    title: "New York City",
+                                    description: "Starting point"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        name: 'add_route_to_map',
+                        input: {
+                            coordinates: [
+                                [-74.0059, 40.7128],
+                                [-118.2437, 34.0522]
+                            ],
+                            color: '#FF0000'
+                        }
+                    }
+                ]
+            };
+
+            // Execute the LLM's tool calls
+            for (const toolCall of mockLLMResponse.tool_calls) {
+                await mapTools.executeTool(toolCall.name, toolCall.input);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+{
+  "name": "mapbox-map-tools",
+  "version": "1.0.0",
+  "description": "A JavaScript library providing MCP-compatible tools for Mapbox GL JS map visualization with LLM function calling support",
+  "main": "dist/mapbox-map-tools.js",
+  "module": "src/mapbox-map-tools.js",
+  "types": "dist/mapbox-map-tools.d.ts",
+  "files": [
+    "dist/",
+    "src/",
+    "examples/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "build:watch": "rollup -c --watch",
+    "dev": "rollup -c --watch",
+    "serve": "http-server examples -p 8080",
+    "test": "echo \"Tests not implemented yet\" && exit 0"
+  },
+  "keywords": [
+    "mapbox",
+    "mapbox-gl-js",
+    "visualization",
+    "geospatial",
+    "maps",
+    "llm",
+    "mcp",
+    "model-context-protocol",
+    "function-calling",
+    "tools",
+    "gis"
+  ],
+  "author": "Moritz Forster",
+  "license": "MIT",
+  "peerDependencies": {
+    "mapbox-gl": "^2.0.0 || ^3.0.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "http-server": "^14.1.1",
+    "rollup": "^4.9.6"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/mapbox-map-tools.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/mapbox-map-tools/issues"
+  },
+  "homepage": "https://github.com/your-username/mapbox-map-tools#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
