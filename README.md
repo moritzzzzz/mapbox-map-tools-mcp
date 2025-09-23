@@ -21,7 +21,7 @@ This library enables Large Language Models (LLMs) like Claude, GPT-4, and others
 
 ### NPM (recommended)
 ```bash
-npm install mapbox-map-tools
+npm install mapbox-map-tools-mcp
 ```
 
 ### CDN
@@ -31,7 +31,7 @@ npm install mapbox-map-tools
 <link href='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css' rel='stylesheet' />
 
 <!-- Include Mapbox Map Tools -->
-<script src='https://unpkg.com/mapbox-map-tools@latest/dist/mapbox-map-tools.min.js'></script>
+<script src='https://unpkg.com/mapbox-map-tools-mcp@latest'></script>
 ```
 
 ### ES Modules

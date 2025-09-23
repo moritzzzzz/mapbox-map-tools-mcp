@@ -1,5 +1,5 @@
 {
-  "name": "mapbox-map-tools",
+  "name": "mapbox-map-tools-mcp",
   "version": "1.0.0",
   "description": "A JavaScript library providing MCP-compatible tools for Mapbox GL JS map visualization with LLM function calling support",
   "main": "src/mapbox-map-tools.js",
@@ -46,13 +46,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/mapbox-map-tools.git"
+    "url": "git+https://github.com/moritzzzzz/mapbox-map-tools-mcp.git"
   },
   "bugs": {
-    "url": "https://github.com/your-username/mapbox-map-tools/issues"
+    "url": "https://github.com/moritzzzzz/mapbox-map-tools-mcp/issues"
   },
-  "homepage": "https://github.com/your-username/mapbox-map-tools#readme",
+  "homepage": "https://github.com/moritzzzzz/mapbox-map-tools-mcp#readme",
   "engines": {
     "node": ">=14.0.0"
+  },
+  "directories": {
+    "example": "examples"
   }
 }
