@@ -27,8 +27,8 @@ npm install mapbox-map-tools-mcp
 ### CDN
 ```html
 <!-- Include Mapbox GL JS first -->
-<script src='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js'></script>
-<link href='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css' rel='stylesheet' />
+<script src='https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.js'></script>
+<link href='https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.css' rel='stylesheet' />
 
 <!-- Include Mapbox Map Tools -->
 <script src='https://unpkg.com/mapbox-map-tools-mcp@latest'></script>
@@ -589,7 +589,7 @@ try {
 **1. "mapboxgl is not defined"**
 Make sure Mapbox GL JS is loaded before the library:
 ```html
-<script src='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js'></script>
+<script src='https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.js'></script>
 <script src='mapbox-map-tools.min.js'></script>
 ```
 
