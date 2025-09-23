@@ -1,6 +1,6 @@
 {
   "name": "mapbox-map-tools-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A JavaScript library providing MCP-compatible tools for Mapbox GL JS map visualization with LLM function calling support",
   "main": "src/mapbox-map-tools.js",
   "module": "src/mapbox-map-tools.esm.js",
