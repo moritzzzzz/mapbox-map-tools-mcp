@@ -6,16 +6,18 @@ This library enables Large Language Models (LLMs) like Claude, GPT-4, and others
 
 ## Features
 
-- 🗺️ **Full Mapbox GL JS Integration** - Works with any Mapbox GL JS map instance
-- 🤖 **LLM Function Calling** - MCP-compatible tool definitions for AI assistants
-- 🎯 **Point Visualization** - Add markers with popups and custom styling
-- 🛤️ **Route Drawing** - Visualize paths, routes, and travel itineraries
-- 🏔️ **Polygon Support** - Display areas, regions, and boundaries
-- 📍 **Map Navigation** - Pan, zoom, and fit bounds programmatically
-- 🎨 **Style Control** - Switch between different Mapbox map styles
-- 🧹 **Layer Management** - Clear and organize map layers
-- 📱 **Framework Agnostic** - Works with React, Vue, Angular, or vanilla JS
-- 🌐 **Universal Module** - UMD, ESM, and CommonJS builds included
+-  **Full Mapbox GL JS Integration** - Works with any Mapbox GL JS map instance
+-  **LLM Function Calling** - MCP-compatible tool definitions for AI assistants
+-  **Point Visualization** - Add markers with popups and custom styling
+-  **Route Drawing** - Visualize paths, routes, and travel itineraries
+-  **Polygon Support** - Display areas, regions, and boundaries
+-  **Vector Tileset Support** - Add pre-rendered vector tiles (traffic, terrain, etc.)
+-  **Feature Querying** - Query rendered and source features programmatically
+-  **Map Navigation** - Pan, zoom, and fit bounds programmatically
+-  **Style Control** - Switch between different Mapbox map styles
+-  **Layer Management** - Clear and organize map layers
+-  **Framework Agnostic** - Works with React, Vue, Angular, or vanilla JS
+-  **Universal Module** - UMD, ESM, and CommonJS builds included
 
 ## Installation
 
@@ -83,7 +85,7 @@ const result = await mapTools.executeTool('add_points_to_map', {
 const claudeTools = mapTools.getToolsForLLM();
 
 const message = await claude.messages.create({
-    model: "claude-sonnet-4-20250514",
+    model: "claude-sonnet-4-5-20250929",
     max_tokens: 1000,
     tools: claudeTools,
     messages: [
@@ -138,7 +140,7 @@ class GeospatialAI {
 
         // Send to Claude with all available tools
         const response = await this.claude.messages.create({
-            model: "claude-sonnet-4-20250514",
+            model: "claude-sonnet-4-5-20250929",
             max_tokens: 4000,
             tools: allTools,
             messages: [{ role: "user", content: userMessage }]
@@ -281,6 +283,101 @@ Change the map's visual style.
 ```javascript
 await mapTools.executeTool('set_map_style', {
     style: 'satellite-v9'  // streets-v12, outdoors-v12, light-v11, dark-v11, satellite-v9, satellite-streets-v12
+});
+```
+
+### add_vector_tileset_layer
+Add vector tileset layers like traffic, terrain, or custom vector tiles to the map.
+
+```javascript
+// Add Mapbox Traffic v1 with data-driven styling
+await mapTools.executeTool('add_vector_tileset_layer', {
+    tilesetUrl: 'mapbox://mapbox.mapbox-traffic-v1',
+    sourceLayer: 'traffic',
+    layerType: 'line',
+    layerName: 'traffic-layer',
+    paint: {
+        'line-color': [
+            'match',
+            ['get', 'congestion'],
+            'low', '#00FF00',
+            'moderate', '#FFFF00',
+            'heavy', '#FFA500',
+            'severe', '#FF0000',
+            '#0074D9'  // default color
+        ],
+        'line-width': 3,
+        'line-opacity': 0.8
+    },
+    minzoom: 10,
+    maxzoom: 20
+});
+
+// Add custom vector tileset
+await mapTools.executeTool('add_vector_tileset_layer', {
+    tilesetUrl: 'https://tiles.example.com/{z}/{x}/{y}.pbf',
+    sourceLayer: 'buildings',
+    layerType: 'fill-extrusion',
+    paint: {
+        'fill-extrusion-color': '#888888',
+        'fill-extrusion-height': ['get', 'height'],
+        'fill-extrusion-opacity': 0.8
+    }
+});
+```
+
+### query_rendered_features
+Query features that are currently visible in the map viewport.
+
+```javascript
+// Query at a specific screen point
+await mapTools.executeTool('query_rendered_features', {
+    point: { x: 400, y: 300 },
+    layers: ['points-layer-1', 'traffic-layer-1'],
+    limit: 50,
+    includeGeometry: true
+});
+
+// Query within a bounding box
+await mapTools.executeTool('query_rendered_features', {
+    bbox: [100, 100, 500, 400],  // [x1, y1, x2, y2] in screen pixels
+    filter: ['==', ['get', 'type'], 'restaurant'],
+    limit: 100,
+    includeGeometry: false  // Only properties, no geometry
+});
+
+// Query entire viewport
+await mapTools.executeTool('query_rendered_features', {
+    layers: ['points-layer-1'],
+    limit: 200
+});
+```
+
+### query_source_features
+Query all features from a data source, regardless of visibility or viewport.
+
+```javascript
+// Query GeoJSON source
+await mapTools.executeTool('query_source_features', {
+    sourceId: 'points-layer-1',
+    limit: 1000,
+    includeGeometry: true
+});
+
+// Query vector tileset with filter
+await mapTools.executeTool('query_source_features', {
+    sourceId: 'mapbox-mapbox-traffic-v1-vector-source',
+    sourceLayer: 'traffic',
+    filter: ['==', ['get', 'congestion'], 'severe'],
+    limit: 500,
+    includeGeometry: false
+});
+
+// Query with property filter
+await mapTools.executeTool('query_source_features', {
+    sourceId: 'points-layer-1',
+    filter: ['>', ['get', 'population'], 100000],
+    limit: 100
 });
 ```
 
@@ -496,7 +593,7 @@ import Anthropic from '@anthropic-ai/sdk';
 const anthropic = new Anthropic({ apiKey: 'your-anthropic-api-key' });
 
 const message = await anthropic.messages.create({
-    model: "claude-sonnet-4-20250514",
+    model: "claude-sonnet-4-5-20250929",
     max_tokens: 1000,
     tools: mapTools.getToolsForLLM(),
     messages: [
@@ -582,6 +679,66 @@ try {
 }
 ```
 
+### 4. Working with Vector Tilesets and Queries
+```javascript
+// Complete workflow: Add traffic layer, query congestion, and mark severe areas
+async function visualizeTrafficHotspots() {
+    // 1. Add Mapbox Traffic v1 layer with data-driven styling
+    const trafficResult = await mapTools.executeTool('add_vector_tileset_layer', {
+        tilesetUrl: 'mapbox://mapbox.mapbox-traffic-v1',
+        sourceLayer: 'traffic',
+        layerType: 'line',
+        layerName: 'traffic-congestion',
+        paint: {
+            'line-color': [
+                'match',
+                ['get', 'congestion'],
+                'low', '#00FF00',
+                'moderate', '#FFFF00',
+                'heavy', '#FFA500',
+                'severe', '#FF0000',
+                '#0074D9'
+            ],
+            'line-width': 3
+        }
+    });
+
+    // 2. Query for severely congested roads
+    const severeTraffic = await mapTools.executeTool('query_source_features', {
+        sourceId: trafficResult.sourceId,
+        sourceLayer: 'traffic',
+        filter: ['==', ['get', 'congestion'], 'severe'],
+        limit: 50,
+        includeGeometry: true
+    });
+
+    // 3. Add markers at severe congestion locations
+    if (severeTraffic.data.features.length > 0) {
+        const congestionPoints = severeTraffic.data.features.map(feature => {
+            const coords = feature.geometry.coordinates[0]; // Get first point of line
+            return {
+                longitude: coords[0],
+                latitude: coords[1],
+                title: 'Severe Traffic',
+                description: `Road class: ${feature.properties.class}`,
+                color: '#FF0000'
+            };
+        });
+
+        await mapTools.executeTool('add_points_to_map', {
+            points: congestionPoints,
+            layerName: 'traffic-hotspots'
+        });
+
+        // 4. Fit map to show all hotspots
+        await mapTools.executeTool('fit_map_to_bounds', {
+            coordinates: congestionPoints.map(p => [p.longitude, p.latitude]),
+            padding: 50
+        });
+    }
+}
+```
+
 ## Troubleshooting
 
 ### Common Issues
@@ -642,9 +799,9 @@ MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Support
 
-- 📚 [Documentation](https://github.com/moritzzzzz/mapbox-map-tools-mcp#readme)
-- 🐛 [Issue Tracker](https://github.com/moritzzzzz/mapbox-map-tools-mcp/issues)
-- 💬 [Discussions](https://github.com/moritzzzzz/mapbox-map-tools-mcp/discussions)
+-  [Documentation](https://github.com/moritzzzzz/mapbox-map-tools-mcp#readme)
+-  [Issue Tracker](https://github.com/moritzzzzz/mapbox-map-tools-mcp/issues)
+-  [Discussions](https://github.com/moritzzzzz/mapbox-map-tools-mcp/discussions)
 
 ## Related Projects
 
