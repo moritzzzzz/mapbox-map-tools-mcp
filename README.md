@@ -8,16 +8,19 @@ This library enables Large Language Models (LLMs) like Claude, GPT-4, and others
 
 -  **Full Mapbox GL JS Integration** - Works with any Mapbox GL JS map instance
 -  **LLM Function Calling** - MCP-compatible tool definitions for AI assistants
+-  **One-Call Trip Drawing** - `draw_trip_on_map` clears, draws markers + route, and frames the camera in a single tool call *(new in 1.1.0)*
 -  **Point Visualization** - Add markers with popups and custom styling
 -  **Route Drawing** - Visualize paths, routes, and travel itineraries
 -  **Polygon Support** - Display areas, regions, and boundaries
 -  **Vector Tileset Support** - Add pre-rendered vector tiles (traffic, terrain, etc.)
 -  **Feature Querying** - Query rendered and source features programmatically
--  **Map Navigation** - Pan, zoom, and fit bounds programmatically
--  **Style Control** - Switch between different Mapbox map styles
--  **Layer Management** - Clear and organize map layers
+-  **Map Navigation** - Pan, zoom, and fit bounds programmatically; camera tools resolve only after the movement settles *(new in 1.1.0)*
+-  **Map State Introspection** - `get_map_state` reports center, zoom, bounds, style, and custom layers *(new in 1.1.0)*
+-  **Layer Management** - Registry-backed clearing, single-layer removal, and visibility toggling; host apps can register their own layers via `registerExternalLayers()` *(improved in 1.1.0)*
 -  **Framework Agnostic** - Works with React, Vue, Angular, or vanilla JS
 -  **Universal Module** - UMD, ESM, and CommonJS builds included
+
+See [CHANGELOG.md](CHANGELOG.md) for what's new in each release.
 
 ## Installation
 
@@ -85,7 +88,7 @@ const result = await mapTools.executeTool('add_points_to_map', {
 const claudeTools = mapTools.getToolsForLLM();
 
 const message = await claude.messages.create({
-    model: "claude-sonnet-4-5-20250929",
+    model: "claude-sonnet-4-6",
     max_tokens: 1000,
     tools: claudeTools,
     messages: [
@@ -140,7 +143,7 @@ class GeospatialAI {
 
         // Send to Claude with all available tools
         const response = await this.claude.messages.create({
-            model: "claude-sonnet-4-5-20250929",
+            model: "claude-sonnet-4-6",
             max_tokens: 4000,
             tools: allTools,
             messages: [{ role: "user", content: userMessage }]
@@ -176,6 +179,36 @@ const result = await app.processQuery("Show me coffee shops in Paris and display
 ```
 
 ## Available Tools
+
+### draw_trip_on_map *(new in 1.1.0)*
+Draw a complete trip in one call: clears previous visualizations, adds point markers, draws an optional route line, and frames the camera over everything. Designed so an LLM presenting an itinerary needs exactly one tool call instead of a `clear_map_layers` → `add_points_to_map` → `add_route_to_map` → `fit_map_to_bounds` chain.
+
+```javascript
+await mapTools.executeTool('draw_trip_on_map', {
+    points: [
+        { longitude: -81.5812, latitude: 28.4177, title: "Magic Kingdom", color: "#FFC857" },
+        { longitude: -81.5494, latitude: 28.3747, title: "EPCOT", color: "#FFC857" },
+        { longitude: -81.51, latitude: 28.37, title: "Recommended Hotel", color: "#FF6B35" }
+    ],
+    route: [[-81.5812, 28.4177], [-81.5494, 28.3747]],  // optional
+    clearFirst: true,   // default
+    fit: true           // default — camera frames all drawn features
+});
+// → { success: true, pointsAdded: 3, routeDrawn: true, layerIds: [...], bounds: {...} }
+```
+
+If a route was already fetched and drawn (e.g. from a directions API), pass `useLastRoute: true` instead of echoing the coordinate array — the LLM doesn't have to re-emit potentially hundreds of coordinates through tool arguments:
+
+```javascript
+// Host app feeds an externally fetched route into the mechanism once:
+mapTools.setLastRoute(directionsGeometry.coordinates);
+
+// The LLM can then draw it without re-passing the geometry:
+await mapTools.executeTool('draw_trip_on_map', {
+    points: [...],
+    useLastRoute: true
+});
+```
 
 ### add_points_to_map
 Add point markers to the map with optional popup information.
@@ -239,7 +272,7 @@ await mapTools.executeTool('add_polygon_to_map', {
 ```
 
 ### pan_map_to_location
-Center the map on a specific location.
+Center the map on a specific location. Since 1.1.0 the returned promise resolves only after the camera settles (`moveend`, with a 4s safety timeout), so chained tool calls no longer race the animation — the same applies to `fit_map_to_bounds`.
 
 ```javascript
 await mapTools.executeTool('pan_map_to_location', {
@@ -265,7 +298,7 @@ await mapTools.executeTool('fit_map_to_bounds', {
 ```
 
 ### clear_map_layers
-Remove map layers to clean up visualizations.
+Remove map layers to clean up visualizations. Since 1.1.0 this is backed by a layer registry — every layer/source the library creates is tracked and removed reliably (the old layer-id pattern matching remains only as a fallback). Layers the host app created itself participate too once registered via `registerExternalLayers()`.
 
 ```javascript
 // Clear all custom layers
@@ -275,6 +308,40 @@ await mapTools.executeTool('clear_map_layers', {});
 await mapTools.executeTool('clear_map_layers', {
     layerNames: ["cities", "routes"]
 });
+```
+
+### remove_layer *(new in 1.1.0)*
+Remove a single layer (and its source once unused) without clearing everything else. Polygon companion layers (`-fill`/`-stroke`) are removed together with their base name.
+
+```javascript
+await mapTools.executeTool('remove_layer', {
+    layerName: "points-layer-1"   // layer ID returned at creation
+});
+```
+
+### set_layer_visibility *(new in 1.1.0)*
+Show or hide an existing layer without removing it.
+
+```javascript
+await mapTools.executeTool('set_layer_visibility', {
+    layerName: "points-layer-1",
+    visible: false
+});
+```
+
+### get_map_state *(new in 1.1.0)*
+Report the current camera and custom-layer state — useful for an LLM that needs to know what the map is showing before acting.
+
+```javascript
+const state = await mapTools.executeTool('get_map_state', {});
+// → {
+//     success: true,
+//     center: [-81.5, 28.4],
+//     zoom: 10.5,
+//     bounds: { west: ..., south: ..., east: ..., north: ... },
+//     styleName: "Mapbox Streets",
+//     customLayers: ["points-layer-1", "route-layer-2"]
+//   }
 ```
 
 ### set_map_style
@@ -593,7 +660,7 @@ import Anthropic from '@anthropic-ai/sdk';
 const anthropic = new Anthropic({ apiKey: 'your-anthropic-api-key' });
 
 const message = await anthropic.messages.create({
-    model: "claude-sonnet-4-5-20250929",
+    model: "claude-sonnet-4-6",
     max_tokens: 1000,
     tools: mapTools.getToolsForLLM(),
     messages: [
@@ -662,15 +729,17 @@ await mapTools.executeTool('clear_map_layers', {
 ```
 
 ### 3. Error Handling
+Since 1.1.0 every result carries a `success` boolean (and `error` message on failure) alongside the MCP-style `content`/`isError` fields — feed the whole result object back to the LLM as the tool result so it can react to failures.
+
 ```javascript
 try {
     const result = await mapTools.executeTool('add_route_to_map', {
         coordinates: routeCoordinates
     });
 
-    if (result.isError) {
-        console.error('Tool execution failed:', result.content[0].text);
-        // Handle error appropriately
+    if (!result.success) {
+        console.error('Tool execution failed:', result.error);
+        // Handle error appropriately (and return it to the LLM as an error tool_result)
     } else {
         console.log('Route added successfully:', result.layerId);
     }
@@ -784,9 +853,11 @@ await mapTools.executeTool('clear_map_layers', {
 - `enableHoverEffects: boolean` - Enable hover cursor effects
 
 ### Methods
-- `executeTool(toolName, args)` - Execute a tool by name
+- `executeTool(toolName, args)` - Execute a tool by name. Every result includes `success: true/false` plus structured payload fields (`pointsAdded`, `removedCount`, `layerIds`, `bounds`, …) alongside the MCP-style `content`/`isError` fields *(standardized in 1.1.0)*
 - `getToolsForLLM()` - Get all tool definitions for LLM function calling
-- `getCustomLayerIds()` - Get all layer IDs created by this library
+- `getCustomLayerIds()` - Get all layer IDs created by this library (registry-backed since 1.1.0)
+- `registerExternalLayers(layerIds, sourceIds)` - Register layers/sources the host app created itself, so `clear_map_layers` and `remove_layer` manage them too *(new in 1.1.0)*
+- `setLastRoute(coordinates)` - Remember an externally fetched route ([lng, lat] pairs) for `draw_trip_on_map({useLastRoute: true})` *(new in 1.1.0)*
 - `destroy()` - Clean up and remove all layers
 
 ## Contributing
